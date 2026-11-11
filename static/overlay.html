@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify OBS Overlay</title>
+  <!-- Google Fonts for overlay customization -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,600;1,700;1,800&family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,600;1,700;1,800&family=Outfit:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&family=Roboto:wght@400;500;700;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/overlay.css">
+</head>
+<body class="obs-body">
+  <div id="obs-stage" class="obs-stage pos-bottom-left">
+    <div id="spotify-card" class="spotify-card style-capsule hidden">
+      
+      <!-- Top Accent Hazard Stripes (Mecha / Synthwave) -->
+      <div id="stripes-top" class="accent-stripes stripes-top">
+        <span class="stripe s1"></span>
+        <span class="stripe s2"></span>
+        <span class="stripe s3"></span>
+      </div>
+
+      <!-- Album Cover Section -->
+      <div id="album-container" class="album-container">
+        <div id="album-wrap" class="album-wrap">
+          <img id="album-cover" class="album-cover" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23181818'/></svg>" alt="Album Cover">
+          
+          <!-- Vinyl Center Hole & Groove Ring Overlay -->
+          <div id="vinyl-overlay" class="vinyl-overlay">
+            <div class="vinyl-center"></div>
+          </div>
+
+          <!-- Mecha Corner Brackets -->
+          <div id="mecha-brackets" class="mecha-brackets">
+            <span class="b-tl"></span>
+            <span class="b-tr"></span>
+            <span class="b-bl"></span>
+            <span class="b-br"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Track Information Section -->
+      <div class="track-details">
+        <!-- Title and Equalizer Row -->
+        <div class="title-row">
+          <!-- Small Soundwave Icon (Purple Dusk Style) -->
+          <div id="equalizer" class="equalizer">
+            <span class="bar bar-1"></span>
+            <span class="bar bar-2"></span>
+            <span class="bar bar-3"></span>
+            <span class="bar bar-4"></span>
+            <span class="bar bar-5"></span>
+          </div>
+
+          <div class="title-scroller" id="title-scroller">
+            <div id="track-title" class="track-title">Waiting for Spotify...</div>
+          </div>
+        </div>
+
+        <!-- Artist, Spotify Badge and Album Row -->
+        <div class="artist-row">
+          <!-- Spotify Icon Badge -->
+          <svg id="spotify-badge" class="spotify-badge" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.674.464-1.027.249-2.812-1.718-6.353-2.107-10.523-1.155-.403.092-.806-.157-.898-.56-.092-.403.157-.806.56-.898 4.567-1.042 8.49-.602 11.64 1.337.353.215.463.674.248 1.027zm1.467-3.262c-.27.44-.847.578-1.287.308-3.22-1.979-8.128-2.552-11.936-1.396-.496.15-1.024-.134-1.174-.63-.15-.496.134-1.024.63-1.174 4.356-1.322 9.774-.682 13.459 1.583.44.27.578.847.308 1.287zm.126-3.41c-3.86-2.292-10.228-2.503-13.896-1.39-.592.18-1.22-.162-1.4-.754-.18-.592.162-1.22.754-1.4 4.22-1.282 11.25-1.036 15.698 1.604.53.315.703 1.002.388 1.532-.315.53-1.002.703-1.532.388z"/>
+          </svg>
+          <span id="track-artist" class="track-artist">No track detected</span>
+          <span id="artist-separator" class="artist-separator hidden">•</span>
+          <span id="track-album" class="track-album hidden"></span>
+        </div>
+
+        <!-- Music Progress Section -->
+        <div id="progress-section" class="progress-section">
+          <div id="progress-track" class="progress-track">
+            <div id="progress-fill" class="progress-fill">
+              <!-- Circular glowing thumb pin knob -->
+              <div id="progress-thumb" class="progress-thumb"></div>
+            </div>
+          </div>
+          <div id="timestamp-row" class="timestamp-row">
+            <span id="time-current" class="time-current">0:00</span>
+            <span id="time-total" class="time-total">0:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right-Side Audio Rhythm Visualizer (User Image 2 & 3) -->
+      <div id="rhythm-visualizer" class="rhythm-visualizer">
+        <span class="r-bar rb-1"></span>
+        <span class="r-bar rb-2"></span>
+        <span class="r-bar rb-3"></span>
+        <span class="r-bar rb-4"></span>
+        <span class="r-bar rb-5"></span>
+        <span class="r-bar rb-6"></span>
+        <span class="r-bar rb-7"></span>
+        <span class="r-bar rb-8"></span>
+        <span class="r-bar rb-9"></span>
+        <span class="r-bar rb-10"></span>
+        <span class="r-bar rb-11"></span>
+      </div>
+
+      <!-- Bottom Accent Hazard Stripes (Mecha / Synthwave) -->
+      <div id="stripes-bottom" class="accent-stripes stripes-bottom">
+        <span class="stripe s1"></span>
+        <span class="stripe s2"></span>
+        <span class="stripe s3"></span>
+      </div>
+
+      <!-- Paused Badge Overlay -->
+      <div id="paused-badge" class="paused-badge">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+          <rect x="5" y="4" width="4" height="16" rx="1"></rect>
+          <rect x="15" y="4" width="4" height="16" rx="1"></rect>
+        </svg>
+        <span>PAUSED</span>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="/static/overlay.js"></script>
+</body>
+</html>

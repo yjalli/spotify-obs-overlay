@@ -1,0 +1,21 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# App data (Edge/Chrome browser profile - local only)
+.app_data/
+
+# Config saved locally (users generate their own)
+config.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# VS Code
+.vscode/
+
+# Screenshots folder (if you add your own)
+# screenshots/

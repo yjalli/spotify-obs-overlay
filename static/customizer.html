@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify OBS Overlay - Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,600;1,700&family=Outfit:ital,wght@0,400;0,500;0,600;0,700;1,600;1,700&family=Playfair+Display:ital,wght@0,600;0,700&family=Poppins:ital,wght@0,400;0,600;0,700;1,600;1,700&family=Roboto:wght@400;500;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/customizer.css">
+</head>
+<body class="customizer-app">
+
+  <!-- Header Navigation -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-group">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#1db954">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.494 17.306c-.215.353-.674.464-1.027.249-2.812-1.718-6.353-2.107-10.523-1.155-.403.092-.806-.157-.898-.56-.092-.403.157-.806.56-.898 4.567-1.042 8.49-.602 11.64 1.337.353.215.463.674.248 1.027zm1.467-3.262c-.27.44-.847.578-1.287.308-3.22-1.979-8.128-2.552-11.936-1.396-.496.15-1.024-.134-1.174-.63-.15-.496.134-1.024.63-1.174 4.356-1.322 9.774-.682 13.459 1.583.44.27.578.847.308 1.287zm.126-3.41c-3.86-2.292-10.228-2.503-13.896-1.39-.592.18-1.22-.162-1.4-.754-.18-.592.162-1.22.754-1.4 4.22-1.282 11.25-1.036 15.698 1.604.53.315.703 1.002.388 1.532-.315.53-1.002.703-1.532.388z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="logo-title">Spotify OBS Overlay Studio</h1>
+          <p class="logo-subtitle">Real-time Stream HUD & Customizer</p>
+        </div>
+      </div>
+      <!-- Live Track Status Pill -->
+      <div id="live-status-pill" class="status-pill status-waiting">
+        <span class="status-dot"></span>
+        <span id="header-track-info" class="status-text">Detecting Spotify...</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <!-- Test Mode Toggle Button -->
+      <button id="btn-toggle-test" class="btn btn-secondary" title="Simulate a playing song for live customizing without Spotify">
+        <span class="btn-icon">⚡</span>
+        <span id="btn-toggle-test-text">Test Song Mode</span>
+      </button>
+      <button id="btn-next-test" class="btn btn-icon-only btn-secondary" title="Next Mock Song" style="display: none;">
+        ⏭️
+      </button>
+
+      <!-- Open Overlay in New Tab -->
+      <a href="/overlay" target="_blank" class="btn btn-secondary" title="View transparent overlay in browser tab">
+        <span class="btn-icon">↗</span>
+        <span>Open Overlay</span>
+      </a>
+
+      <!-- Copy OBS Source URL Button -->
+      <button id="btn-copy-url" class="btn btn-primary" title="Copy URL for OBS Studio Browser Source">
+        <span class="btn-icon">📋</span>
+        <span id="btn-copy-text">Copy OBS URL</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid Content -->
+  <main class="main-layout">
+    <!-- Left Column: Controls & Settings -->
+    <section class="controls-panel">
+      <!-- Tab Navigation -->
+      <nav class="settings-tabs">
+        <button class="tab-btn active" data-tab="tab-presets">🎨 12 Presets</button>
+        <button class="tab-btn" data-tab="tab-layout">📐 Layout & Chassis</button>
+        <button class="tab-btn" data-tab="tab-album">🖼️ Cover</button>
+        <button class="tab-btn" data-tab="tab-typography">✍️ Fonts</button>
+        <button class="tab-btn" data-tab="tab-card">🎨 Card</button>
+        <button class="tab-btn" data-tab="tab-progress">⏳ Progress</button>
+        <button class="tab-btn" data-tab="tab-effects">⚡ Rhythm & Effects</button>
+      </nav>
+
+      <!-- Scrollable Settings Container -->
+      <div class="tab-content-wrapper">
+
+        <!-- ================= TAB: PRESETS (12+ STYLES) ================= -->
+        <div id="tab-presets" class="tab-pane active">
+          <div class="section-intro">
+            <h3>12 Professional Theme Presets</h3>
+            <p>Click any preset below to instantly transform your stream overlay.</p>
+          </div>
+          <div class="presets-grid">
+            <!-- 1. Purple Dusk Capsule (Reference Image 1) -->
+            <button class="preset-card featured-preset" data-preset="purple-dusk">
+              <div class="preset-preview preview-purple-dusk"></div>
+              <div class="preset-title">💜 Purple Dusk Capsule</div>
+              <div class="preset-desc">The Weeknd "After Hours" purple neon capsule with glowing pin</div>
+            </button>
+
+            <!-- 2. Synthwave Horizon (Reference Image 2) -->
+            <button class="preset-card featured-preset" data-preset="synthwave-horizon">
+              <div class="preset-preview preview-synthwave-horizon"></div>
+              <div class="preset-title">🌅 Synthwave Horizon</div>
+              <div class="preset-desc">Outrun chamfered HUD, hazard stripes & sunset glow</div>
+            </button>
+
+            <!-- 3. Frosted Clean Glass (Reference Image 3 & Rhythm Wave) -->
+            <button class="preset-card featured-preset" data-preset="frosted-clean">
+              <div class="preset-preview preview-frosted-clean"></div>
+              <div class="preset-title">🤍 Frosted Clean Glass</div>
+              <div class="preset-desc">Pure white frosted glass, Spotify green glow & rhythm wave</div>
+            </button>
+
+            <!-- 4. Cyberpunk Mecha HUD (Reference Image 4) -->
+            <button class="preset-card featured-preset" data-preset="mecha-hud">
+              <div class="preset-preview preview-mecha-hud"></div>
+              <div class="preset-title">🤖 Cyberpunk Mecha HUD</div>
+              <div class="preset-desc">Dual-tone cyan/magenta gaming frame with corner cuts</div>
+            </button>
+
+            <!-- 5. Spotify Glass Classic -->
+            <button class="preset-card" data-preset="spotify-glass">
+              <div class="preset-preview preview-glass"></div>
+              <div class="preset-title">🟢 Spotify Glass Classic</div>
+              <div class="preset-desc">Frosted dark glass card with subtle green neon glow</div>
+            </button>
+
+            <!-- 6. Spotify Neon High-Voltage -->
+            <button class="preset-card" data-preset="spotify-neon">
+              <div class="preset-preview preview-neon"></div>
+              <div class="preset-title">⚡ High-Voltage Neon</div>
+              <div class="preset-desc">High contrast black card with thick electric green glow</div>
+            </button>
+
+            <!-- 7. Retro Vinyl Record -->
+            <button class="preset-card" data-preset="retro-vinyl">
+              <div class="preset-preview preview-vinyl"></div>
+              <div class="preset-title">💿 Retro Vinyl Record</div>
+              <div class="preset-desc">Spinning turntable record with realistic grooves & gold accents</div>
+            </button>
+
+            <!-- 8. Pure Floating Minimal -->
+            <button class="preset-card" data-preset="clean-floating">
+              <div class="preset-preview preview-floating"></div>
+              <div class="preset-title">👻 Pure Floating Minimal</div>
+              <div class="preset-desc">Zero background box, clean floating overlay & glowing progress</div>
+            </button>
+
+            <!-- 9. Compact Streamer Pill -->
+            <button class="preset-card" data-preset="compact-pill">
+              <div class="preset-preview preview-pill"></div>
+              <div class="preset-title">💊 Compact Streamer Pill</div>
+              <div class="preset-desc">Slim horizontal capsule for minimum screen footprint</div>
+            </button>
+
+            <!-- 10. Nord Arctic Frost -->
+            <button class="preset-card" data-preset="nord-frost">
+              <div class="preset-preview preview-nord"></div>
+              <div class="preset-title">❄️ Nord Arctic Frost</div>
+              <div class="preset-desc">Muted blue frosted glass with icy cyan highlights</div>
+            </button>
+
+            <!-- 11. Crimson Blade / Bloodmoon -->
+            <button class="preset-card" data-preset="crimson-blade">
+              <div class="preset-preview preview-crimson"></div>
+              <div class="preset-title">🔴 Crimson Blade</div>
+              <div class="preset-desc">Aggressive esports red & dark carbon mecha styling</div>
+            </button>
+
+            <!-- 12. Deep Space Nebula -->
+            <button class="preset-card" data-preset="deep-space">
+              <div class="preset-preview preview-deepspace"></div>
+              <div class="preset-title">🌌 Deep Space Nebula</div>
+              <div class="preset-desc">Cosmic indigo gradient with teal and purple stellar glow</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ================= TAB: LAYOUT & CHASSIS ================= -->
+        <div id="tab-layout" class="tab-pane">
+          <div class="form-group">
+            <label class="group-label">HUD Chassis Frame Style</label>
+            <div class="segmented-control">
+              <button class="segment-btn active" data-bind="chassisStyle" data-val="capsule">Capsule Pill 💜</button>
+              <button class="segment-btn" data-bind="chassisStyle" data-val="horizon">Horizon Synth 🌅</button>
+              <button class="segment-btn" data-bind="chassisStyle" data-val="frosted-light">Clean Frosted 🤍</button>
+              <button class="segment-btn" data-bind="chassisStyle" data-val="mecha-hud">Mecha HUD 🤖</button>
+              <button class="segment-btn" data-bind="chassisStyle" data-val="standard">Standard Card</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="group-label">Screen Position</label>
+            <div class="segmented-control">
+              <button class="segment-btn active" data-bind="position" data-val="bottom-left">Bottom-Left</button>
+              <button class="segment-btn" data-bind="position" data-val="bottom-right">Bottom-Right</button>
+              <button class="segment-btn" data-bind="position" data-val="top-left">Top-Left</button>
+              <button class="segment-btn" data-bind="position" data-val="top-right">Top-Right</button>
+              <button class="segment-btn" data-bind="position" data-val="center">Center</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="group-label">Card Orientation</label>
+            <div class="segmented-control">
+              <button class="segment-btn active" data-bind="orientation" data-val="horizontal">Horizontal (Classic)</button>
+              <button class="segment-btn" data-bind="orientation" data-val="vertical">Vertical (Stacked)</button>
+              <button class="segment-btn" data-bind="orientation" data-val="compact">Compact (Pill)</button>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Card Width: <span class="val-display" id="val-cardWidth">520px</span></label>
+              <input type="range" min="320" max="780" step="10" id="cardWidth" data-bind="cardWidth">
+            </div>
+            <div class="control-col">
+              <label>Scale: <span class="val-display" id="val-scale">100%</span></label>
+              <input type="range" min="50" max="200" step="5" id="scale" data-bind="scale">
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Padding: <span class="val-display" id="val-cardPadding">14px</span></label>
+              <input type="range" min="6" max="36" step="2" id="cardPadding" data-bind="cardPadding">
+            </div>
+            <div class="control-col">
+              <label>Elements Spacing: <span class="val-display" id="val-gap">16px</span></label>
+              <input type="range" min="8" max="32" step="2" id="gap" data-bind="gap">
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Offset X: <span class="val-display" id="val-offsetX">40px</span></label>
+              <input type="range" min="0" max="250" step="5" id="offsetX" data-bind="offsetX">
+            </div>
+            <div class="control-col">
+              <label>Offset Y: <span class="val-display" id="val-offsetY">40px</span></label>
+              <input type="range" min="0" max="250" step="5" id="offsetY" data-bind="offsetY">
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="accentStripes" data-bind="accentStripes">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Diagonal Hazard Speed Stripes (///)</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="albumProtrude" data-bind="albumProtrude">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Protruding / Floating Album Art (Over Chassis Edge)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ================= TAB: ALBUM COVER ================= -->
+        <div id="tab-album" class="tab-pane">
+          <div class="form-group">
+            <label class="group-label">Cover Shape</label>
+            <div class="segmented-control">
+              <button class="segment-btn active" data-bind="albumShape" data-val="rounded">Rounded</button>
+              <button class="segment-btn" data-bind="albumShape" data-val="square">Square</button>
+              <button class="segment-btn" data-bind="albumShape" data-val="circle">Circle</button>
+              <button class="segment-btn" data-bind="albumShape" data-val="vinyl">Vinyl Record 💿</button>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Cover Size: <span class="val-display" id="val-albumSize">80px</span></label>
+              <input type="range" min="48" max="180" step="4" id="albumSize" data-bind="albumSize">
+            </div>
+            <div class="control-col">
+              <label>Corner Radius: <span class="val-display" id="val-albumRadius">18px</span></label>
+              <input type="range" min="0" max="50" step="2" id="albumRadius" data-bind="albumRadius">
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Border Width: <span class="val-display" id="val-albumBorderWidth">2px</span></label>
+              <input type="range" min="0" max="8" step="1" id="albumBorderWidth" data-bind="albumBorderWidth">
+            </div>
+            <div class="control-col">
+              <label>Border Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="albumBorderColor" data-bind="albumBorderColor" value="#c084fc">
+                <span class="color-hex-label" id="label-albumBorderColor">#c084fc</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="albumShadow" data-bind="albumShadow">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Album Drop Shadow</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="albumSpin" data-bind="albumSpin">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Spin Record / Circle While Playing</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ================= TAB: TYPOGRAPHY ================= -->
+        <div id="tab-typography" class="tab-pane">
+          <h4 class="subheading">Track Title</h4>
+          <div class="control-row">
+            <div class="control-col">
+              <label>Font Family</label>
+              <select id="titleFont" data-bind="titleFont" class="select-input">
+                <option value="Inter">Inter (Clean Modern)</option>
+                <option value="Poppins">Poppins (Geometric Round)</option>
+                <option value="Montserrat">Montserrat (Bold Classic)</option>
+                <option value="Outfit">Outfit (Futuristic Streamer)</option>
+                <option value="Roboto">Roboto (Clean)</option>
+                <option value="Fira Code">Fira Code (Tech Code)</option>
+                <option value="Playfair Display">Playfair Display (Serif / Vinyl)</option>
+                <option value="Oswald">Oswald (Condensed Heavy)</option>
+              </select>
+            </div>
+            <div class="control-col">
+              <label>Font Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="titleColor" data-bind="titleColor" value="#ffffff">
+                <span class="color-hex-label" id="label-titleColor">#ffffff</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Title Size: <span class="val-display" id="val-titleSize">18px</span></label>
+              <input type="range" min="12" max="32" step="1" id="titleSize" data-bind="titleSize">
+            </div>
+            <div class="control-col">
+              <label>Font Weight</label>
+              <select id="titleWeight" data-bind="titleWeight" class="select-input">
+                <option value="400">Regular (400)</option>
+                <option value="500">Medium (500)</option>
+                <option value="600">SemiBold (600)</option>
+                <option value="700" selected>Bold (700)</option>
+                <option value="800">ExtraBold (800)</option>
+                <option value="900">Black (900)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="titleItalic" data-bind="titleItalic">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Slanted Italic Title (Synthwave / Racing Style)</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="titleMarquee" data-bind="titleMarquee">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Smooth Marquee Scroll for Long Titles</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="titleShadow" data-bind="titleShadow">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Text Glow / Drop Shadow</span>
+            </label>
+          </div>
+
+          <h4 class="subheading" style="margin-top: 18px;">Artist & Badge</h4>
+          <div class="control-row">
+            <div class="control-col">
+              <label>Artist Size: <span class="val-display" id="val-artistSize">14px</span></label>
+              <input type="range" min="10" max="22" step="1" id="artistSize" data-bind="artistSize">
+            </div>
+            <div class="control-col">
+              <label>Artist Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="artistColor" data-bind="artistColor" value="#c4b5fd">
+                <span class="color-hex-label" id="label-artistColor">#c4b5fd</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="artistItalic" data-bind="artistItalic">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Slanted Italic Artist</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="showSpotifyIcon" data-bind="showSpotifyIcon">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Show Spotify Logo Icon Badge</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="showAlbum" data-bind="showAlbum">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Show Album Name Next to Artist</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- ================= TAB: CARD ================= -->
+        <div id="tab-card" class="tab-pane">
+          <div class="form-group">
+            <label class="group-label">Card Style</label>
+            <div class="segmented-control">
+              <button class="segment-btn active" data-bind="bgType" data-val="glass">Glassmorphism</button>
+              <button class="segment-btn" data-bind="bgType" data-val="solid">Solid Color</button>
+              <button class="segment-btn" data-bind="bgType" data-val="gradient">Gradient</button>
+              <button class="segment-btn" data-bind="bgType" data-val="transparent">Transparent (None)</button>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Background Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="bgColor" data-bind="bgColor" value="#181226">
+                <span class="color-hex-label" id="label-bgColor">#181226</span>
+              </div>
+            </div>
+            <div class="control-col">
+              <label>Opacity: <span class="val-display" id="val-bgOpacity">92%</span></label>
+              <input type="range" min="0" max="100" step="5" id="bgOpacity" data-bind="bgOpacity">
+            </div>
+          </div>
+
+          <div id="gradient-options" class="control-row" style="display: none;">
+            <div class="control-col">
+              <label>Gradient Secondary Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="bgGradient2" data-bind="bgGradient2" value="#0c0816">
+                <span class="color-hex-label" id="label-bgGradient2">#0c0816</span>
+              </div>
+            </div>
+            <div class="control-col">
+              <label>Angle: <span class="val-display" id="val-bgGradientAngle">180°</span></label>
+              <input type="range" min="0" max="360" step="15" id="bgGradientAngle" data-bind="bgGradientAngle">
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Backdrop Blur: <span class="val-display" id="val-backdropBlur">20px</span></label>
+              <input type="range" min="0" max="40" step="2" id="backdropBlur" data-bind="backdropBlur">
+            </div>
+            <div class="control-col">
+              <label>Border Radius: <span class="val-display" id="val-cardRadius">28px</span></label>
+              <input type="range" min="0" max="44" step="2" id="cardRadius" data-bind="cardRadius">
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Border Width: <span class="val-display" id="val-borderWidth">2px</span></label>
+              <input type="range" min="0" max="6" step="1" id="borderWidth" data-bind="borderWidth">
+            </div>
+            <div class="control-col">
+              <label>Border Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="borderColorPicker" value="#a855f7">
+                <span class="color-hex-label" id="label-borderColor">#a855f7</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= TAB: PROGRESS ================= -->
+        <div id="tab-progress" class="tab-pane">
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="showProgress" data-bind="showProgress">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Show Music Progress Bar</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="showProgressThumb" data-bind="showProgressThumb">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Circular Glowing Thumb Pin (Head Handle)</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="showTimestamps" data-bind="showTimestamps">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Show Duration Timestamps (01:24 / 04:28)</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Progress Bar Height: <span class="val-display" id="val-progressHeight">6px</span></label>
+              <input type="range" min="2" max="14" step="1" id="progressHeight" data-bind="progressHeight">
+            </div>
+            <div class="control-col">
+              <label>Thumb Pin Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="thumbColor" data-bind="thumbColor" value="#ffffff">
+                <span class="color-hex-label" id="label-thumbColor">#ffffff</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Fill Color (Active)</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="progressFillColor" data-bind="progressFillColor" value="#a855f7">
+                <span class="color-hex-label" id="label-progressFillColor">#a855f7</span>
+              </div>
+            </div>
+            <div class="control-col">
+              <label>Track Background Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="progressTrackColorPicker" value="#ffffff">
+                <span class="color-hex-label" id="label-progressTrackColor">rgba(...)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="progressFillGradient" data-bind="progressFillGradient">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Gradient Fill (2 Colors)</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="progressGlow" data-bind="progressGlow">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Neon Glow Effect on Progress Bar</span>
+            </label>
+          </div>
+
+          <div id="progress-gradient-col" class="control-row" style="display: none;">
+            <div class="control-col">
+              <label>Gradient Fill End Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="progressFillColor2" data-bind="progressFillColor2" value="#c084fc">
+                <span class="color-hex-label" id="label-progressFillColor2">#c084fc</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Timestamp Font Size: <span class="val-display" id="val-timestampSize">11px</span></label>
+              <input type="range" min="9" max="16" step="1" id="timestampSize" data-bind="timestampSize">
+            </div>
+            <div class="control-col">
+              <label>Timestamp Text Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="timestampColor" data-bind="timestampColor" value="#e2e8f0">
+                <span class="color-hex-label" id="label-timestampColor">#e2e8f0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= TAB: RHYTHM & EFFECTS ================= -->
+        <div id="tab-effects" class="tab-pane">
+          <!-- Prominent Rhythm Wave Section (User Image 2) -->
+          <div class="rhythm-control-card">
+            <div class="rhythm-header">
+              <span class="rhythm-icon">🎵</span>
+              <div>
+                <h4 class="rhythm-title">Audio Rhythm Waveform Visualizer</h4>
+                <p class="rhythm-desc">Customize the animated spectrum equalizer bars on the right side</p>
+              </div>
+            </div>
+
+            <div class="toggle-group" style="margin-top: 10px;">
+              <label class="toggle-label">
+                <input type="checkbox" id="showRhythmWave" data-bind="showRhythmWave">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Show Audio Rhythm Waveform</span>
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="rhythmGlow" data-bind="rhythmGlow">
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Rhythm Bar Glow Effect</span>
+              </label>
+            </div>
+
+            <div class="control-row" style="margin-top: 12px;">
+              <div class="control-col">
+                <label>Rhythm Wave Color (Change Color)</label>
+                <div class="color-picker-wrap">
+                  <input type="color" id="rhythmColor" data-bind="rhythmColor" value="#a855f7">
+                  <span class="color-hex-label" id="label-rhythmColor">#a855f7</span>
+                </div>
+              </div>
+              <div class="control-col">
+                <label>Rhythm Height: <span class="val-display" id="val-rhythmHeight">36px</span></label>
+                <input type="range" min="18" max="64" step="2" id="rhythmHeight" data-bind="rhythmHeight">
+              </div>
+            </div>
+          </div>
+
+          <h4 class="subheading" style="margin-top: 18px;">Other Visualizers & Badges</h4>
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="showEqualizer" data-bind="showEqualizer">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Title-Row Mini Soundwave Icon</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="showPauseIcon" data-bind="showPauseIcon">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Show "PAUSED" Badge When Song Is Paused</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="dimWhenPaused" data-bind="dimWhenPaused">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Dim Card Opacity When Paused</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Mini Soundwave Color</label>
+              <div class="color-picker-wrap">
+                <input type="color" id="equalizerColor" data-bind="equalizerColor" value="#a855f7">
+                <span class="color-hex-label" id="label-equalizerColor">#a855f7</span>
+              </div>
+            </div>
+            <div class="control-col">
+              <label>Paused Dim Opacity: <span class="val-display" id="val-dimOpacity">70%</span></label>
+              <input type="range" min="20" max="90" step="5" id="dimOpacity" data-bind="dimOpacity">
+            </div>
+          </div>
+
+          <h4 class="subheading" style="margin-top: 18px;">Auto-Hide Options (Streamer Comfort)</h4>
+          <div class="toggle-group">
+            <label class="toggle-label">
+              <input type="checkbox" id="autoHideInactive" data-bind="autoHideInactive">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Auto-hide overlay when Spotify is closed / stopped</span>
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="autoHidePaused" data-bind="autoHidePaused">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Auto-hide overlay after song stays paused</span>
+            </label>
+          </div>
+
+          <div class="control-row">
+            <div class="control-col">
+              <label>Auto-hide Delay: <span class="val-display" id="val-autoHideDelay">10s</span></label>
+              <input type="range" min="3" max="60" step="1" id="autoHideDelay" data-bind="autoHideDelay">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Footer -->
+      <div class="controls-footer">
+        <button id="btn-save" class="btn btn-primary btn-block">
+          <span>💾 Save Configuration</span>
+        </button>
+        <button id="btn-reset" class="btn btn-secondary btn-block">
+          <span>↺ Reset to Defaults</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Right Column: Live Interactive Preview & OBS Guide -->
+    <section class="preview-panel">
+      <!-- Live Preview Container Card -->
+      <div class="preview-box">
+        <div class="preview-header">
+          <div class="preview-title-wrap">
+            <span class="preview-dot"></span>
+            <h3>Live Overlay Preview</h3>
+            <span class="preview-badge">100% Real-Time</span>
+          </div>
+
+          <!-- Background backdrop switcher -->
+          <div class="bg-switcher">
+            <button class="bg-btn active" data-bg="checker" title="OBS Transparent Checkerboard">🏁</button>
+            <button class="bg-btn" data-bg="ambient" title="Ambient Dark">🌌</button>
+            <button class="bg-btn" data-bg="game" title="Gaming Screenshot Simulation">🎮</button>
+            <button class="bg-btn" data-bg="light" title="Light Background">☀️</button>
+          </div>
+        </div>
+
+        <!-- The actual preview canvas hosting the overlay frame -->
+        <div id="preview-stage" class="preview-stage stage-checker">
+          <iframe id="preview-frame" src="/overlay" title="Live Overlay Preview"></iframe>
+        </div>
+      </div>
+
+      <!-- OBS Setup Guide Card -->
+      <div class="obs-card">
+        <div class="obs-card-header">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#1db954">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
+          </svg>
+          <h3>How to Add to OBS Studio in 30 Seconds</h3>
+        </div>
+        <ol class="obs-steps">
+          <li>
+            In <strong>OBS Studio</strong>, click <strong>+</strong> under <em>Sources</em> and select <strong>Browser</strong>.
+          </li>
+          <li>
+            Name it <code>Spotify Overlay</code> and paste the local URL:
+            <div class="obs-url-box">
+              <code id="obs-source-url">http://localhost:8888/overlay</code>
+              <button id="btn-copy-code" class="btn btn-tiny">Copy</button>
+            </div>
+          </li>
+          <li>
+            Set <strong>Width</strong> to <code>1920</code> and <strong>Height</strong> to <code>1080</code>.
+          </li>
+          <li>
+            Leave <em>Custom CSS</em> blank (it is already 100% transparent), and click <strong>OK</strong>!
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Configuration saved successfully!</div>
+
+  <script src="/static/customizer.js"></script>
+</body>
+</html>

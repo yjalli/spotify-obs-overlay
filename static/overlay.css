@@ -1,0 +1,696 @@
+/* ==========================================================
+   Spotify OBS Overlay - Master Stylesheet
+   Designed for ultra-low CPU, zero-flicker, hardware-accelerated OBS Browser Source
+   Supports all 4 user reference designs + 12+ theme presets + Customizable Rhythm Wave
+   ========================================================== */
+
+:root {
+  /* Layout */
+  --scale: 1;
+  --offset-x: 40px;
+  --offset-y: 40px;
+  --card-width: 520px;
+  --card-padding: 14px;
+  --gap: 16px;
+  --flex-direction: row;
+  --align-items: center;
+
+  /* Card Container */
+  --bg-style: rgba(24, 18, 38, 0.92);
+  --backdrop-blur: 20px;
+  --card-radius: 28px;
+  --border-width: 2px;
+  --border-color: rgba(168, 85, 247, 0.75);
+  --card-shadow: 0 0 25px rgba(168, 85, 247, 0.45), inset 0 0 14px rgba(168, 85, 247, 0.2);
+
+  /* Album Cover */
+  --album-size: 80px;
+  --album-radius: 18px;
+  --album-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --album-border-width: 2px;
+  --album-border-color: rgba(192, 132, 252, 0.8);
+
+  /* Typography */
+  --title-font: 'Inter', sans-serif;
+  --title-size: 18px;
+  --title-weight: 700;
+  --title-color: #ffffff;
+  --title-style: normal;
+  --title-transform: none;
+  --title-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+  --artist-font: 'Inter', sans-serif;
+  --artist-size: 14px;
+  --artist-weight: 500;
+  --artist-color: #c4b5fd;
+  --artist-style: normal;
+  --artist-transform: none;
+
+  --album-font-size: 12px;
+  --album-font-color: #777777;
+
+  /* Progress Bar */
+  --progress-height: 6px;
+  --progress-radius: 3px;
+  --progress-track-color: rgba(255, 255, 255, 0.16);
+  --progress-fill-color: linear-gradient(90deg, #a855f7, #c084fc);
+  --progress-glow: 0 0 10px rgba(168, 85, 247, 0.6);
+  --thumb-color: #ffffff;
+
+  /* Timestamps */
+  --timestamp-font: 'Inter', sans-serif;
+  --timestamp-size: 11px;
+  --timestamp-color: #e2e8f0;
+
+  /* Equalizer & Indicators */
+  --equalizer-color: #a855f7;
+  --spotify-icon-color: #a855f7;
+  --dim-opacity: 0.7;
+
+  /* Audio Rhythm Visualizer (Image 2) */
+  --rhythm-color: #a855f7;
+  --rhythm-height: 36px;
+  --rhythm-glow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body.obs-body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: transparent !important;
+  font-family: var(--title-font);
+  user-select: none;
+}
+
+/* Positioning Stage for OBS Browser Source */
+.obs-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.pos-bottom-left {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: var(--offset-y) var(--offset-x);
+}
+
+.pos-bottom-right {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: var(--offset-y) var(--offset-x);
+}
+
+.pos-top-left {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--offset-y) var(--offset-x);
+}
+
+.pos-top-right {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: var(--offset-y) var(--offset-x);
+}
+
+.pos-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--offset-y) var(--offset-x);
+}
+
+/* ==========================================================
+   Master Card Component & Chassis Variants
+   ========================================================== */
+.spotify-card {
+  position: relative;
+  display: flex;
+  flex-direction: var(--flex-direction);
+  align-items: var(--align-items);
+  gap: var(--gap);
+  width: var(--card-width);
+  max-width: 92vw;
+  padding: var(--card-padding);
+  background: var(--bg-style);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border-radius: var(--card-radius);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  transform: scale(var(--scale));
+  transform-origin: bottom left;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease,
+              background 0.3s ease,
+              box-shadow 0.3s ease,
+              border 0.3s ease;
+  will-change: transform, opacity;
+  pointer-events: auto;
+}
+
+/* Hidden & Paused States */
+.spotify-card.hidden {
+  opacity: 0 !important;
+  transform: scale(calc(var(--scale) * 0.95)) translateY(18px) !important;
+  pointer-events: none;
+}
+.spotify-card.is-paused {
+  opacity: var(--dim-opacity);
+}
+
+/* ----------------------------------------------------------
+   Chassis Style 1: Capsule (User Image 1)
+   ---------------------------------------------------------- */
+.spotify-card.style-capsule {
+  border-radius: 32px;
+}
+
+/* ----------------------------------------------------------
+   Chassis Style 2: Synthwave Horizon (User Image 2)
+   ---------------------------------------------------------- */
+.spotify-card.style-horizon {
+  border-radius: 12px;
+  clip-path: polygon(
+    0% 0%,
+    calc(100% - 60px) 0%,
+    calc(100% - 40px) 14px,
+    100% 14px,
+    100% 100%,
+    40px 100%,
+    20px calc(100% - 12px),
+    0% calc(100% - 12px)
+  );
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.spotify-card.style-horizon::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #ff4500, #ff007f);
+  clip-path: polygon(
+    0% 0%,
+    calc(100% - 60px) 0%,
+    calc(100% - 40px) 14px,
+    100% 14px,
+    100% 100%,
+    40px 100%,
+    20px calc(100% - 12px),
+    0% calc(100% - 12px)
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------
+   Chassis Style 3: Frosted Clean Light (User Image 3)
+   ---------------------------------------------------------- */
+.spotify-card.style-frosted-light {
+  background: rgba(255, 255, 255, 0.93) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 22px;
+}
+
+/* ----------------------------------------------------------
+   Chassis Style 4: Cyberpunk Mecha HUD (User Image 4)
+   ---------------------------------------------------------- */
+.spotify-card.style-mecha-hud {
+  border-radius: 6px;
+  clip-path: polygon(
+    20px 0%,
+    calc(100% - 20px) 0%,
+    100% 20px,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    20px 100%,
+    0% calc(100% - 20px),
+    0% 20px
+  );
+  border: 2px solid transparent;
+}
+.spotify-card.style-mecha-hud::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(90deg, #00f0ff 0%, #ff00aa 100%);
+  clip-path: polygon(
+    20px 0%,
+    calc(100% - 20px) 0%,
+    100% 20px,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    20px 100%,
+    0% calc(100% - 20px),
+    0% 20px
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Hazard Accent Stripes (///) */
+.accent-stripes {
+  display: none;
+  position: absolute;
+  gap: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+.accent-stripes.visible {
+  display: flex;
+}
+.stripes-top {
+  top: 6px;
+  right: 18px;
+}
+.stripes-bottom {
+  bottom: 4px;
+  left: 24px;
+}
+.stripe {
+  width: 5px;
+  height: 10px;
+  transform: skewX(-25deg);
+  border-radius: 1px;
+}
+.stripes-top .s1 { background: #ffaa00; box-shadow: 0 0 6px #ffaa00; }
+.stripes-top .s2 { background: #ff5500; box-shadow: 0 0 6px #ff5500; }
+.stripes-top .s3 { background: #ff007f; box-shadow: 0 0 6px #ff007f; }
+
+.stripes-bottom .s1 { background: #ffaa00; box-shadow: 0 0 6px #ffaa00; }
+.stripes-bottom .s2 { background: #ff5500; box-shadow: 0 0 6px #ff5500; }
+.stripes-bottom .s3 { background: #ff007f; box-shadow: 0 0 6px #ff007f; }
+
+/* ==========================================================
+   Album Cover Section
+   ========================================================== */
+.album-container {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.album-container.protrude {
+  transform: scale(1.08) translateY(-2px);
+  margin-left: -4px;
+}
+
+.album-wrap {
+  position: relative;
+  width: var(--album-size);
+  height: var(--album-size);
+  border-radius: var(--album-radius);
+  overflow: hidden;
+  box-shadow: var(--album-shadow);
+  border: var(--album-border-width) solid var(--album-border-color);
+  background: #181818;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease, height 0.3s ease, border-radius 0.3s ease, border 0.3s ease;
+}
+
+.album-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Spinning Animation for Vinyl or Circle */
+.album-wrap.spinning {
+  animation: vinyl-spin 14s linear infinite;
+}
+.spotify-card.is-paused .album-wrap.spinning {
+  animation-play-state: paused;
+}
+
+@keyframes vinyl-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Vinyl Overlay Details */
+.vinyl-overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08),
+              inset 0 0 10px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+}
+.album-wrap.vinyl-mode .vinyl-overlay {
+  display: block;
+}
+.album-wrap.vinyl-mode {
+  border-radius: 50% !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7),
+              0 0 0 4px #0c0c0c,
+              inset 0 0 20px rgba(0, 0, 0, 0.8) !important;
+}
+.vinyl-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 22%;
+  height: 22%;
+  border-radius: 50%;
+  background: #111;
+  border: 3px solid #e0b888;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+}
+
+/* Mecha Corner Bracket Overlays */
+.mecha-brackets {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.album-wrap.mecha-mode .mecha-brackets {
+  display: block;
+}
+.mecha-brackets span {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: #00f0ff;
+  border-style: solid;
+}
+.mecha-brackets .b-tl { top: 2px; left: 2px; border-width: 2px 0 0 2px; }
+.mecha-brackets .b-tr { top: 2px; right: 2px; border-width: 2px 2px 0 0; border-color: #ff00aa; }
+.mecha-brackets .b-bl { bottom: 2px; left: 2px; border-width: 0 0 2px 2px; }
+.mecha-brackets .b-br { bottom: 2px; right: 2px; border-width: 0 2px 2px 0; border-color: #ff00aa; }
+
+/* ==========================================================
+   Track Details Section
+   ========================================================== */
+.track-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  z-index: 2;
+}
+
+/* Title Row */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.title-scroller {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.track-title {
+  font-family: var(--title-font);
+  font-size: var(--title-size);
+  font-weight: var(--title-weight);
+  font-style: var(--title-style);
+  color: var(--title-color);
+  text-transform: var(--title-transform);
+  text-shadow: var(--title-shadow);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  transition: color 0.3s ease;
+}
+
+.track-title.marquee {
+  display: inline-block;
+  overflow: visible;
+  animation: marquee-scroll 12s linear infinite alternate;
+}
+
+@keyframes marquee-scroll {
+  0%, 15% { transform: translateX(0%); }
+  85%, 100% { transform: translateX(calc(-100% + var(--container-width, 240px))); }
+}
+
+/* Soundwave Icon Equalizer (Image 1 style) */
+.equalizer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.equalizer.hidden {
+  display: none !important;
+}
+.equalizer .bar {
+  width: 3px;
+  background-color: var(--equalizer-color);
+  border-radius: 2px;
+  box-shadow: 0 0 6px var(--equalizer-color);
+  height: 100%;
+  animation: soundwave 1s ease-in-out infinite alternate;
+}
+.equalizer .bar-1 { height: 35%; animation-delay: 0.1s; }
+.equalizer .bar-2 { height: 80%; animation-delay: 0.3s; }
+.equalizer .bar-3 { height: 100%; animation-delay: 0.5s; }
+.equalizer .bar-4 { height: 70%; animation-delay: 0.25s; }
+.equalizer .bar-5 { height: 40%; animation-delay: 0.4s; }
+
+.spotify-card.is-paused .equalizer .bar {
+  animation-play-state: paused;
+  transform: scaleY(0.3);
+  transition: transform 0.3s ease;
+}
+
+@keyframes soundwave {
+  0% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+  100% { transform: scaleY(0.4); }
+}
+
+/* Artist Row with Spotify Badge */
+.artist-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-family: var(--artist-font);
+  font-size: var(--artist-size);
+  font-weight: var(--artist-weight);
+  font-style: var(--artist-style);
+  color: var(--artist-color);
+  text-transform: var(--artist-transform);
+  line-height: 1.3;
+}
+
+.spotify-badge {
+  display: none;
+  flex-shrink: 0;
+  color: var(--spotify-icon-color);
+}
+.spotify-badge.visible {
+  display: inline-block;
+}
+
+.track-artist {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist-separator {
+  color: var(--album-font-color);
+  font-size: 10px;
+  opacity: 0.7;
+}
+.artist-separator.hidden {
+  display: none !important;
+}
+
+.track-album {
+  font-size: var(--album-font-size);
+  color: var(--album-font-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-album.hidden {
+  display: none !important;
+}
+
+/* ==========================================================
+   Progress Bar with Circular Glowing Thumb Handle
+   ========================================================== */
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+.progress-section.hidden {
+  display: none !important;
+}
+
+.progress-track {
+  position: relative;
+  width: 100%;
+  height: var(--progress-height);
+  background-color: var(--progress-track-color);
+  border-radius: var(--progress-radius);
+  overflow: visible;
+}
+
+.progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background: var(--progress-fill-color);
+  border-radius: var(--progress-radius);
+  box-shadow: var(--progress-glow);
+  transition: width 0.15s linear;
+  will-change: width;
+}
+
+/* Glowing Circular Thumb Pin */
+.progress-thumb {
+  display: none;
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: var(--thumb-color, #ffffff);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--thumb-color, #ffffff), 0 1px 3px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  pointer-events: none;
+}
+.progress-thumb.visible {
+  display: block;
+}
+
+.timestamp-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--timestamp-font);
+  font-size: var(--timestamp-size);
+  color: var(--timestamp-color);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.timestamp-row.hidden {
+  display: none !important;
+}
+
+/* ==========================================================
+   Right-Side Audio Rhythm Visualizer (User Image 2)
+   ========================================================== */
+.rhythm-visualizer {
+  display: none;
+  align-items: flex-end;
+  gap: 3.5px;
+  height: var(--rhythm-height, 36px);
+  margin-left: 8px;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.rhythm-visualizer.visible {
+  display: flex;
+}
+
+.rhythm-visualizer .r-bar {
+  width: 3.5px;
+  background: var(--rhythm-color, #1db954);
+  border-radius: 4px;
+  box-shadow: var(--rhythm-glow);
+  transform-origin: bottom;
+  transition: background 0.3s ease, height 0.2s ease;
+  animation: rhythm-bounce 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+/* Mountain spectrum curve distribution matching User Image 2 */
+.rhythm-visualizer .rb-1  { height: 32%; animation-delay: 0.15s; }
+.rhythm-visualizer .rb-2  { height: 50%; animation-delay: 0.35s; }
+.rhythm-visualizer .rb-3  { height: 80%; animation-delay: 0.2s;  }
+.rhythm-visualizer .rb-4  { height: 60%; animation-delay: 0.45s; }
+.rhythm-visualizer .rb-5  { height: 100%; animation-delay: 0.1s; }
+.rhythm-visualizer .rb-6  { height: 45%; animation-delay: 0.4s;  }
+.rhythm-visualizer .rb-7  { height: 55%; animation-delay: 0.25s; }
+.rhythm-visualizer .rb-8  { height: 25%; animation-delay: 0.5s;  }
+.rhythm-visualizer .rb-9  { height: 70%; animation-delay: 0.3s;  }
+.rhythm-visualizer .rb-10 { height: 35%; animation-delay: 0.45s; }
+.rhythm-visualizer .rb-11 { height: 20%; animation-delay: 0.2s;  }
+
+.spotify-card.is-paused .rhythm-visualizer .r-bar {
+  animation-play-state: paused;
+  transform: scaleY(0.25);
+  transition: transform 0.3s ease;
+}
+
+@keyframes rhythm-bounce {
+  0% { transform: scaleY(0.25); }
+  50% { transform: scaleY(1); }
+  100% { transform: scaleY(0.4); }
+}
+
+/* ==========================================================
+   Paused Badge Indicator
+   ========================================================== */
+.paused-badge {
+  display: none;
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f1f1f1;
+  font-family: var(--title-font);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+.spotify-card.is-paused .paused-badge.visible {
+  display: inline-flex;
+}
