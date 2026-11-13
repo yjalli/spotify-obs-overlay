@@ -174,3 +174,14 @@ spotify-obs-overlay/
 ## 📜 License
 
 This project is licensed under the MIT License — free for streamers and creators to use and modify.
+
+---
+
+## 👤 Author & Credits
+
+Created & Developed by **Yassine Jalli** (**WalooXIII**)  
+GitHub: [@yjalli](https://github.com/yjalli)
+
+<p align="center">
+  Made with ❤️ by <b>Yassine Jalli (WalooXIII)</b> for streamers & content creators
+</p>
