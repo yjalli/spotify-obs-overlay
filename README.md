@@ -48,10 +48,7 @@
   </tr>
 </table>
 
-<p align="center">
-  <img src="screenshots/customizer-panel.png" width="700" alt="Customizer Panel"/>
-  <br/><i>The native desktop customizer panel</i>
-</p>
+
 
 ---
 
@@ -69,7 +66,7 @@
 
 **Option A — Git clone:**
 ```bash
-git clone https://github.com/YOUR_USERNAME/spotify-obs-overlay.git
+git clone https://github.com/yjalli/spotify-obs-overlay.git
 cd spotify-obs-overlay
 ```
 
