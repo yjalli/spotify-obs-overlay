@@ -11,6 +11,7 @@
 </p>
 
 <p align="center">
+  <img src="https://img.shields.io/badge/Presets-27%20Themes-brightgreen?logo=artstation" />
   <img src="https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows" />
   <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?logo=python" />
   <img src="https://img.shields.io/badge/OBS-Browser%20Source-purple?logo=obs-studio" />
@@ -30,9 +31,9 @@ No browser tabs, no search bars. A native desktop window launches automatically 
 
 ---
 
-## 🎨 Professional Theme Presets
+## 🎨 27 Professional Theme Presets
 
-Switch between 12+ styles instantly with matching glowing rhythm spectrum visualizers:
+Switch between 27 unique theme styles instantly with interactive category filtering (Nature, Racing & Gaming, Neon & Synth, Luxury & Glass) with matching glowing rhythm spectrum visualizers:
 
 <table>
   <tr>
@@ -86,6 +87,12 @@ Switch between 12+ styles instantly with matching glowing rhythm spectrum visual
     </td>
   </tr>
 </table>
+
+### 📂 Theme Categories (27 Presets)
+- 🌿 **Nature & Fruits (4)**: Tropical Jungle, Banana Pop, Strawberry Glaze, Sakura Blossom
+- 🏎️ **Racing & Gaming (5)**: Need for Speed, Cyberpunk Mecha HUD, Cyber Matrix, Retro Arcade, Toxic Biohazard
+- ⚡ **Neon & Synth (9)**: Purple Dusk Capsule, Synthwave Horizon, High-Voltage Neon, Crimson Blade, Deep Space Nebula, Sunset Inferno, Midnight Amethyst, Vampire Gothic, Deep Abyss
+- 💎 **Luxury & Glass (9)**: Frosted Clean Glass, Spotify Glass Classic, Retro Vinyl Record, Pure Floating Minimal, Compact Streamer Pill, Nord Arctic Frost, Golden Royal, Cozy Latte, Glacial Iceberg
 
 ---
 
