@@ -2,6 +2,7 @@
 Spotify Now Playing OBS Overlay - Desktop Launcher
 Opens the customizer panel as a native standalone desktop window
 using pywebview (no browser, no address bar, no tabs).
+Falls back gracefully to default browser / Edge app mode if native window cannot be initialized.
 """
 
 import sys
@@ -9,12 +10,11 @@ import os
 import time
 import threading
 import urllib.request
+import webbrowser
 
 import uvicorn
-import webview
 
 
-# ── Port ──────────────────────────────────────────────────────────────────────
 PORT = 8888
 CUSTOMIZER_URL = f"http://localhost:{PORT}/customizer"
 
@@ -33,8 +33,7 @@ def wait_for_server(timeout: int = 15) -> bool:
 
 def run_server():
     """Run the FastAPI server in a daemon thread."""
-    # Import here so it runs in this thread's context
-    from server import app  # noqa: F401 – registers all routes
+    from server import app
     uvicorn.run(
         app,
         host="0.0.0.0",
@@ -44,40 +43,51 @@ def run_server():
     )
 
 
+def open_browser_fallback():
+    """Fallback if pywebview fails: open customizer in browser."""
+    print("[*] Opening customizer panel in browser...")
+    webbrowser.open(CUSTOMIZER_URL)
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        pass
+
+
 def main():
     # ── 1. Start server in background thread ──────────────────────────────────
     srv_thread = threading.Thread(target=run_server, daemon=True, name="OBSServer")
     srv_thread.start()
 
-    print("[*] Starting Spotify OBS Overlay Server…")
+    print("[*] Starting Spotify OBS Overlay Server...")
     if not wait_for_server(timeout=20):
-        print("[!] Server did not start in time — opening window anyway.")
+        print("[!] Server did not respond to status check — continuing anyway.")
 
     print(f"[*] OBS Browser Source URL : http://localhost:{PORT}/overlay")
-    print(f"[*] Opening customizer panel…")
+    print(f"[*] Control Panel URL      : {CUSTOMIZER_URL}")
+    print("[*] Opening Control Panel desktop window...")
 
-    # ── 2. Open native desktop window via pywebview ───────────────────────────
-    window = webview.create_window(
-        title="🎵 Spotify OBS Overlay — Control Panel",
-        url=CUSTOMIZER_URL,
-        width=1300,
-        height=870,
-        min_size=(900, 600),
-        resizable=True,
-        # Transparent background keeps the dark card look crisp
-        background_color="#0d1117",
-        # Allow JavaScript (required for live preview and WebSocket)
-        js_api=None,
-    )
-
-    # Start the webview — this call BLOCKS until the window is closed
-    webview.start(debug=False)
-
-    print("[*] Window closed. Server will stop.")
-    sys.exit(0)
+    # ── 2. Open native desktop window via pywebview (with fallback) ───────────
+    try:
+        import webview
+        window = webview.create_window(
+            title="🎵 Spotify OBS Overlay — Control Panel",
+            url=CUSTOMIZER_URL,
+            width=1300,
+            height=870,
+            min_size=(900, 600),
+            resizable=True,
+            background_color="#0d1117",
+            js_api=None,
+        )
+        webview.start(debug=False)
+        print("[*] Window closed. Server stopped.")
+        sys.exit(0)
+    except Exception as err:
+        print(f"[!] Native desktop window error: {err}")
+        open_browser_fallback()
 
 
 if __name__ == "__main__":
-    # Ensure we run from the project directory
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     main()

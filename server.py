@@ -23,6 +23,9 @@ logger = logging.getLogger("SpotifyOverlay")
 WINSDK_AVAILABLE = False
 try:
     # 1. Modern official winrt (supports Python 3.9, 3.10, 3.11, 3.12, 3.13+)
+    import winrt.windows.foundation
+    import winrt.windows.foundation.collections
+    import winrt.windows.media
     from winrt.windows.media.control import (
         GlobalSystemMediaTransportControlsSessionManager as MediaManager,
         GlobalSystemMediaTransportControlsSession as MediaSession,
@@ -31,7 +34,8 @@ try:
     from winrt.windows.storage.streams import DataReader
     WINSDK_AVAILABLE = True
     logger.info('Using modern winrt package for Windows Media Controls.')
-except ImportError:
+except ImportError as err1:
+    logger.warning(f'winrt import failed: {err1}, falling back to winsdk...')
     try:
         # 2. Legacy winsdk fallback (supports Python 3.10 - 3.12)
         from winsdk.windows.media.control import (
@@ -42,9 +46,9 @@ except ImportError:
         from winsdk.windows.storage.streams import DataReader
         WINSDK_AVAILABLE = True
         logger.info('Using winsdk package for Windows Media Controls.')
-    except ImportError:
+    except ImportError as err2:
         WINSDK_AVAILABLE = False
-        logger.warning('Neither winrt nor winsdk found. Windows Media Control integration will be limited.')
+        logger.warning(f'Neither winrt nor winsdk found: {err2}. Windows Media Control integration will be limited.')
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")

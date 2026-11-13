@@ -12,7 +12,7 @@ echo.
 python --version >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] Python is not installed or not in PATH!
-    echo Please install Python (3.10 to 3.13) from https://www.python.org/downloads/
+    echo Please install Python (3.10, 3.11, 3.12, or 3.13) from https://www.python.org/downloads/
     echo IMPORTANT: Make sure to check "Add Python to PATH" during installation.
     echo.
     pause
@@ -24,7 +24,7 @@ echo [*] Checking dependencies...
 python -m pip install -r requirements.txt --user --quiet --disable-pip-version-check
 if errorlevel 1 (
     echo [*] Retrying dependency installation...
-    python -m pip install fastapi uvicorn websockets pywebview "winrt-Windows.Media.Control>=3.2.1" "winrt-Windows.Storage.Streams>=3.2.1" "winrt-Windows.Foundation>=3.2.1" --user --disable-pip-version-check
+    python -m pip install fastapi uvicorn websockets pywebview "winrt-runtime>=3.2.1" "winrt-Windows.Foundation>=3.2.1" "winrt-Windows.Foundation.Collections>=3.2.1" "winrt-Windows.Media>=3.2.1" "winrt-Windows.Media.Control>=3.2.1" "winrt-Windows.Storage.Streams>=3.2.1" --user --disable-pip-version-check
 )
 
 :: 3. Launch everything via the Python launcher
