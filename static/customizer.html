@@ -62,7 +62,7 @@
     <section class="controls-panel">
       <!-- Tab Navigation -->
       <nav class="settings-tabs">
-        <button class="tab-btn active" data-tab="tab-presets">🎨 12 Presets</button>
+        <button class="tab-btn active" data-tab="tab-presets">🎨 27 Presets</button>
         <button class="tab-btn" data-tab="tab-layout">📐 Layout & Chassis</button>
         <button class="tab-btn" data-tab="tab-album">🖼️ Cover</button>
         <button class="tab-btn" data-tab="tab-typography">✍️ Fonts</button>
@@ -77,92 +77,209 @@
         <!-- ================= TAB: PRESETS (12+ STYLES) ================= -->
         <div id="tab-presets" class="tab-pane active">
           <div class="section-intro">
-            <h3>12 Professional Theme Presets</h3>
-            <p>Click any preset below to instantly transform your stream overlay.</p>
+            <div class="intro-header-row">
+              <h3>27 Unique Theme Presets</h3>
+              <span class="preset-count-badge">27 Styles</span>
+            </div>
+            <p>Click any preset to instantly preview and transform your stream overlay.</p>
+
+            <!-- Category Filter Chips -->
+            <div class="preset-filters">
+              <button class="filter-chip active" data-filter="all">✨ All (27)</button>
+              <button class="filter-chip" data-filter="nature">🍃 Nature & Fruits (3)</button>
+              <button class="filter-chip" data-filter="gaming">🏎️ Racing & Gaming (5)</button>
+              <button class="filter-chip" data-filter="neon">⚡ Neon & Synth (7)</button>
+              <button class="filter-chip" data-filter="clean">💎 Luxury & Glass (12)</button>
+            </div>
           </div>
           <div class="presets-grid">
             <!-- 1. Purple Dusk Capsule (Reference Image 1) -->
-            <button class="preset-card featured-preset" data-preset="purple-dusk">
+            <button class="preset-card featured-preset" data-preset="purple-dusk" data-category="neon">
               <div class="preset-preview preview-purple-dusk"></div>
               <div class="preset-title">💜 Purple Dusk Capsule</div>
               <div class="preset-desc">The Weeknd "After Hours" purple neon capsule with glowing pin</div>
             </button>
 
             <!-- 2. Synthwave Horizon (Reference Image 2) -->
-            <button class="preset-card featured-preset" data-preset="synthwave-horizon">
+            <button class="preset-card featured-preset" data-preset="synthwave-horizon" data-category="neon">
               <div class="preset-preview preview-synthwave-horizon"></div>
               <div class="preset-title">🌅 Synthwave Horizon</div>
               <div class="preset-desc">Outrun chamfered HUD, hazard stripes & sunset glow</div>
             </button>
 
             <!-- 3. Frosted Clean Glass (Reference Image 3 & Rhythm Wave) -->
-            <button class="preset-card featured-preset" data-preset="frosted-clean">
+            <button class="preset-card featured-preset" data-preset="frosted-clean" data-category="clean">
               <div class="preset-preview preview-frosted-clean"></div>
               <div class="preset-title">🤍 Frosted Clean Glass</div>
               <div class="preset-desc">Pure white frosted glass, Spotify green glow & rhythm wave</div>
             </button>
 
             <!-- 4. Cyberpunk Mecha HUD (Reference Image 4) -->
-            <button class="preset-card featured-preset" data-preset="mecha-hud">
+            <button class="preset-card featured-preset" data-preset="mecha-hud" data-category="gaming">
               <div class="preset-preview preview-mecha-hud"></div>
               <div class="preset-title">🤖 Cyberpunk Mecha HUD</div>
               <div class="preset-desc">Dual-tone cyan/magenta gaming frame with corner cuts</div>
             </button>
 
             <!-- 5. Spotify Glass Classic -->
-            <button class="preset-card" data-preset="spotify-glass">
+            <button class="preset-card" data-preset="spotify-glass" data-category="clean">
               <div class="preset-preview preview-glass"></div>
               <div class="preset-title">🟢 Spotify Glass Classic</div>
               <div class="preset-desc">Frosted dark glass card with subtle green neon glow</div>
             </button>
 
             <!-- 6. Spotify Neon High-Voltage -->
-            <button class="preset-card" data-preset="spotify-neon">
+            <button class="preset-card" data-preset="spotify-neon" data-category="neon">
               <div class="preset-preview preview-neon"></div>
               <div class="preset-title">⚡ High-Voltage Neon</div>
               <div class="preset-desc">High contrast black card with thick electric green glow</div>
             </button>
 
             <!-- 7. Retro Vinyl Record -->
-            <button class="preset-card" data-preset="retro-vinyl">
+            <button class="preset-card" data-preset="retro-vinyl" data-category="clean">
               <div class="preset-preview preview-vinyl"></div>
               <div class="preset-title">💿 Retro Vinyl Record</div>
               <div class="preset-desc">Spinning turntable record with realistic grooves & gold accents</div>
             </button>
 
             <!-- 8. Pure Floating Minimal -->
-            <button class="preset-card" data-preset="clean-floating">
+            <button class="preset-card" data-preset="clean-floating" data-category="clean">
               <div class="preset-preview preview-floating"></div>
               <div class="preset-title">👻 Pure Floating Minimal</div>
               <div class="preset-desc">Zero background box, clean floating overlay & glowing progress</div>
             </button>
 
             <!-- 9. Compact Streamer Pill -->
-            <button class="preset-card" data-preset="compact-pill">
+            <button class="preset-card" data-preset="compact-pill" data-category="clean">
               <div class="preset-preview preview-pill"></div>
               <div class="preset-title">💊 Compact Streamer Pill</div>
               <div class="preset-desc">Slim horizontal capsule for minimum screen footprint</div>
             </button>
 
             <!-- 10. Nord Arctic Frost -->
-            <button class="preset-card" data-preset="nord-frost">
+            <button class="preset-card" data-preset="nord-frost" data-category="clean">
               <div class="preset-preview preview-nord"></div>
               <div class="preset-title">❄️ Nord Arctic Frost</div>
               <div class="preset-desc">Muted blue frosted glass with icy cyan highlights</div>
             </button>
 
             <!-- 11. Crimson Blade / Bloodmoon -->
-            <button class="preset-card" data-preset="crimson-blade">
+            <button class="preset-card" data-preset="crimson-blade" data-category="neon">
               <div class="preset-preview preview-crimson"></div>
               <div class="preset-title">🔴 Crimson Blade</div>
               <div class="preset-desc">Aggressive esports red & dark carbon mecha styling</div>
             </button>
 
             <!-- 12. Deep Space Nebula -->
-            <button class="preset-card" data-preset="deep-space">
+            <button class="preset-card" data-preset="deep-space" data-category="neon">
               <div class="preset-preview preview-deepspace"></div>
               <div class="preset-title">🌌 Deep Space Nebula</div>
               <div class="preset-desc">Cosmic indigo gradient with teal and purple stellar glow</div>
+            </button>
+
+            <!-- 13. Golden Royal / 24K Luxury -->
+            <button class="preset-card" data-preset="golden-royal" data-category="clean">
+              <div class="preset-preview preview-golden-royal"></div>
+              <div class="preset-title">👑 Golden Royal</div>
+              <div class="preset-desc">Luxury obsidian glass, 24K gold border & glowing gold rhythm</div>
+            </button>
+
+            <!-- 14. Sakura Blossom / Anime Pink -->
+            <button class="preset-card" data-preset="sakura-blossom" data-category="nature">
+              <div class="preset-preview preview-sakura-blossom"></div>
+              <div class="preset-title">🌸 Sakura Blossom</div>
+              <div class="preset-desc">Pastel anime pink glow with cherry blossom rhythm wave</div>
+            </button>
+
+            <!-- 15. Cyber Matrix / Hacker Green -->
+            <button class="preset-card" data-preset="cyber-matrix" data-category="gaming">
+              <div class="preset-preview preview-cyber-matrix"></div>
+              <div class="preset-title">⚡ Cyber Matrix</div>
+              <div class="preset-desc">Matrix hacker monospace HUD with electric green phosphor</div>
+            </button>
+
+            <!-- 16. Sunset Inferno / Lava Orange -->
+            <button class="preset-card" data-preset="sunset-inferno" data-category="neon">
+              <div class="preset-preview preview-sunset-inferno"></div>
+              <div class="preset-title">🔥 Sunset Inferno</div>
+              <div class="preset-desc">Blazing molten lava gradient with fiery amber equalizer</div>
+            </button>
+
+            <!-- 17. Midnight Amethyst / Violet & Cyan -->
+            <button class="preset-card" data-preset="midnight-amethyst" data-category="neon">
+              <div class="preset-preview preview-midnight-amethyst"></div>
+              <div class="preset-title">💎 Midnight Amethyst</div>
+              <div class="preset-desc">Cosmic violet & cyan dual glow with velvet backdrop</div>
+            </button>
+
+            <!-- 18. Tropical Jungle / Amazon Forest Leaves -->
+            <button class="preset-card" data-preset="tropical-jungle" data-category="nature">
+              <div class="preset-preview preview-tropical-jungle"></div>
+              <div class="preset-title">🍃 Tropical Jungle Leaves</div>
+              <div class="preset-desc">Amazon emerald green, glowing leaf vines & organic rainforest glow</div>
+            </button>
+
+            <!-- 19. Banana Pop Tropical -->
+            <button class="preset-card" data-preset="banana-pop" data-category="nature">
+              <div class="preset-preview preview-banana-pop"></div>
+              <div class="preset-title">🍌 Banana Pop Tropical</div>
+              <div class="preset-desc">Vibrant ripe banana yellow, sunny pop art & golden rhythm wave</div>
+            </button>
+
+            <!-- 20. Strawberry Glaze Sweet Candy -->
+            <button class="preset-card" data-preset="strawberry-glaze" data-category="nature">
+              <div class="preset-preview preview-strawberry-glaze"></div>
+              <div class="preset-title">🍓 Strawberry Glaze</div>
+              <div class="preset-desc">Juicy ripe strawberry red, glazed candy glass & sweet mint green pin</div>
+            </button>
+
+            <!-- 21. Need For Speed: Drift HUD -->
+            <button class="preset-card" data-preset="need-for-speed" data-category="gaming">
+              <div class="preset-preview preview-need-for-speed"></div>
+              <div class="preset-title">🏎️ Need For Speed: Drift HUD</div>
+              <div class="preset-desc">Nitrous oxide cyan, RPM redline tachometer & street racing hazard stripes</div>
+            </button>
+
+            <!-- 22. Cozy Café Latte / Roasted Wood -->
+            <button class="preset-card" data-preset="cozy-latte" data-category="clean">
+              <div class="preset-preview preview-cozy-latte"></div>
+              <div class="preset-title">☕ Cozy Café Latte</div>
+              <div class="preset-desc">Warm roasted espresso, caramel foam, spinning vinyl & lofi study vibes</div>
+            </button>
+
+            <!-- 23. Retro Arcade 1984 -->
+            <button class="preset-card" data-preset="retro-arcade" data-category="gaming">
+              <div class="preset-preview preview-retro-arcade"></div>
+              <div class="preset-title">🎮 Retro Arcade 1984</div>
+              <div class="preset-desc">80s coin-op neon synth grid with laser magenta & arcade yellow phosphor</div>
+            </button>
+
+            <!-- 24. Glacial Iceberg / Diamond Freeze -->
+            <button class="preset-card" data-preset="glacial-iceberg" data-category="clean">
+              <div class="preset-preview preview-glacial-iceberg"></div>
+              <div class="preset-title">🧊 Glacial Iceberg</div>
+              <div class="preset-desc">Sub-zero crystal diamond ice glass with freezing cyan accents</div>
+            </button>
+
+            <!-- 25. Toxic Biohazard / Radioactive Lime -->
+            <button class="preset-card" data-preset="toxic-biohazard" data-category="gaming">
+              <div class="preset-preview preview-toxic-biohazard"></div>
+              <div class="preset-title">☢️ Toxic Biohazard</div>
+              <div class="preset-desc">Nuclear isotope radioactive lime glow with warning mecha stripes</div>
+            </button>
+
+            <!-- 26. Vampire Gothic / Blood Velvet -->
+            <button class="preset-card" data-preset="vampire-gothic" data-category="neon">
+              <div class="preset-preview preview-vampire-gothic"></div>
+              <div class="preset-title">🦇 Vampire Gothic Velvet</div>
+              <div class="preset-desc">Midnight black, blood ruby velvet glow & haunting silver typography</div>
+            </button>
+
+            <!-- 27. Bioluminescent Abyss / Deep Jellyfish -->
+            <button class="preset-card" data-preset="deep-abyss" data-category="neon">
+              <div class="preset-preview preview-deep-abyss"></div>
+              <div class="preset-title">🌊 Bioluminescent Abyss</div>
+              <div class="preset-desc">Deep sea oceanic trenches with pulsating electric jellyfish cyan</div>
             </button>
           </div>
         </div>

@@ -92,8 +92,26 @@
       const targetId = btn.dataset.tab;
       const targetPane = document.getElementById(targetId);
       if (targetPane) targetPane.classList.add('active');
+      // Toggle scroll mode: presets tab scrolls the grid, other tabs scroll the wrapper
+      const wrapper = document.querySelector('.tab-content-wrapper');
+      if (wrapper) {
+        if (targetId === 'tab-presets') {
+          wrapper.classList.add('presets-active');
+        } else {
+          wrapper.classList.remove('presets-active');
+        }
+      }
     });
   });
+
+  // Init: presets tab is active by default — apply scroll mode immediately
+  (function initTabScrollMode() {
+    const wrapper = document.querySelector('.tab-content-wrapper');
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (wrapper && activeTab && activeTab.dataset.tab === 'tab-presets') {
+      wrapper.classList.add('presets-active');
+    }
+  })();
 
   // Populate UI controls from config object
   function populateUI(cfg) {
@@ -296,6 +314,29 @@
       } catch (err) {
         console.error('Failed to apply preset:', err);
       }
+    });
+  });
+
+  // Category Filter Chips
+  document.querySelectorAll('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      const filter = chip.dataset.filter;
+      document.querySelectorAll('.preset-card').forEach(card => {
+        if (filter === 'all' || card.dataset.category === filter) {
+          card.style.display = '';
+          card.style.animation = 'fadeIn 0.2s ease';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      // Update visible count badge
+      const visible = filter === 'all'
+        ? document.querySelectorAll('.preset-card').length
+        : document.querySelectorAll(`.preset-card[data-category="${filter}"]`).length;
+      const badge = document.querySelector('.preset-count-badge');
+      if (badge) badge.textContent = `${visible} preset${visible !== 1 ? 's' : ''}`;
     });
   });
 
