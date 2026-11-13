@@ -12,7 +12,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Windows-10%2F11-blue?logo=windows" />
-  <img src="https://img.shields.io/badge/Python-3.10%2B-yellow?logo=python" />
+  <img src="https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-yellow?logo=python" />
   <img src="https://img.shields.io/badge/OBS-Browser%20Source-purple?logo=obs-studio" />
   <img src="https://img.shields.io/badge/No%20API%20Key-required-green" />
   <img src="https://img.shields.io/badge/License-MIT-blue" />

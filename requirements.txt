@@ -1,5 +1,7 @@
-winsdk>=1.0.0b10
 fastapi>=0.100.0
 uvicorn>=0.20.0
 websockets>=11.0.0
 pywebview>=4.0.0
+winrt-Windows.Media.Control>=3.2.1
+winrt-Windows.Storage.Streams>=3.2.1
+winrt-Windows.Foundation>=3.2.1
