@@ -1345,7 +1345,8 @@ fallback_last_song = {
 
 def get_spotify_track_from_window() -> Optional[dict]:
     """Find currently playing Spotify track from Spotify window titles.
-    Scans all process windows and prioritizes any window with an active song title.
+    Scans all process windows, handles international Windows locales (English, French, etc.),
+    normalizes dashes, and prioritizes any window with an active song title.
     """
     try:
         startupinfo = None
@@ -1358,13 +1359,21 @@ def get_spotify_track_from_window() -> Optional[dict]:
             encoding='utf-8',
             errors='ignore',
             startupinfo=startupinfo,
-            timeout=1.5
+            timeout=2.5
         )
         reader = csv.reader(io.StringIO(out))
         rows = list(reader)
         if len(rows) > 1:
             header = [h.strip().lower() for h in rows[0]]
-            title_idx = header.index('window title') if 'window title' in header else -1
+            title_idx = -1
+            for idx, h in enumerate(header):
+                if 'title' in h or 'titre' in h or 'window' in h or 'fen' in h:
+                    title_idx = idx
+                    break
+            # Fallback: in all Windows versions tasklist /fo csv has Window Title as the last column
+            if title_idx == -1 and len(rows[0]) > 0:
+                title_idx = len(rows[0]) - 1
+
             if title_idx >= 0:
                 found_song = None
                 found_paused = False
@@ -1372,16 +1381,21 @@ def get_spotify_track_from_window() -> Optional[dict]:
                     if len(row) > title_idx:
                         wtitle = row[title_idx].strip()
                         if wtitle and wtitle not in ('N/A', 'OleMainThreadWndName', 'Default IME', 'MSCTFIME UI', ''):
-                            if ' - ' in wtitle:
-                                parts = wtitle.split(' - ', 1)
+                            # Normalize unicode dashes (en-dash, em-dash, standard hyphen)
+                            wtitle_clean = wtitle.replace('–', ' - ').replace('—', ' - ')
+                            while '  ' in wtitle_clean:
+                                wtitle_clean = wtitle_clean.replace('  ', ' ')
+
+                            if ' - ' in wtitle_clean:
+                                parts = wtitle_clean.split(' - ', 1)
                                 found_song = {
                                     'artist': parts[0].strip(),
                                     'title': parts[1].strip(),
                                     'is_playing': True,
                                     'status': 'PLAYING'
                                 }
-                                break  # Active song found! Take it immediately
-                            elif wtitle.lower() in ('spotify', 'spotify free', 'spotify premium'):
+                                break  # Prioritize song title! Stop checking remaining rows
+                            elif wtitle_clean.lower() in ('spotify', 'spotify free', 'spotify premium'):
                                 found_paused = True
 
                 if found_song:
@@ -1393,8 +1407,8 @@ def get_spotify_track_from_window() -> Optional[dict]:
                         'is_playing': False,
                         'status': 'PAUSED'
                     }
-    except Exception:
-        pass
+    except Exception as e:
+        logger.debug(f"Window tracker check exception: {e}")
     return None
 
 def fetch_fallback_metadata(artist: str, title: str) -> dict:
@@ -1429,7 +1443,6 @@ def fetch_fallback_metadata(artist: str, title: str) -> dict:
     FALLBACK_METADATA_CACHE[key] = default_meta
     return default_meta
 
-# Background Worker for Media Detection
 async def media_tracker_loop():
     global current_track_state, cached_track_id, cached_artwork, mock_idx, mock_start_time
     global fallback_position, fallback_last_tick, fallback_current_key, fallback_last_song
@@ -1438,6 +1451,34 @@ async def media_tracker_loop():
     media_manager = None
     winrt_disabled = False
     winrt_retry_after = 0.0
+
+    # Immediate initial scan so current_track_state is ready instantly on startup
+    try:
+        init_track = await asyncio.to_thread(get_spotify_track_from_window)
+        if init_track and init_track.get("is_playing"):
+            meta = await asyncio.to_thread(fetch_fallback_metadata, init_track["artist"], init_track["title"])
+            fallback_last_song["title"] = init_track["title"]
+            fallback_last_song["artist"] = init_track["artist"]
+            fallback_last_song["album"] = meta.get("album", "")
+            fallback_last_song["artwork"] = meta.get("artwork", DEFAULT_ARTWORK_SVG)
+            fallback_last_song["duration"] = meta.get("duration", 180.0)
+            fallback_current_key = f"{init_track['artist']}|{init_track['title']}"
+            current_track_state.update({
+                "title": init_track["title"],
+                "artist": init_track["artist"],
+                "album": fallback_last_song["album"],
+                "duration": fallback_last_song["duration"],
+                "position": 0.0,
+                "status": "PLAYING",
+                "is_playing": True,
+                "artwork": fallback_last_song["artwork"],
+                "app_id": "Spotify.exe",
+                "timestamp": time.time(),
+                "has_track": True
+            })
+            logger.info(f"Startup track detected: {init_track['artist']} - {init_track['title']}")
+    except Exception as e:
+        logger.debug(f"Startup initial scan exception: {e}")
 
     if WINSDK_AVAILABLE:
         try:

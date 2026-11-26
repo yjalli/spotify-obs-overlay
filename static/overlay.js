@@ -428,7 +428,21 @@
     checkMarquee();
   });
 
-  // Initialize
+  // Initialize: instant HTTP bootstrap + WebSocket real-time sync
+  fetch('/api/config')
+    .then(r => r.json())
+    .then(cfg => applyConfig(cfg))
+    .catch(() => {});
+
+  fetch('/api/status')
+    .then(r => r.json())
+    .then(status => {
+      if (status && status.track) {
+        renderTrack(status.track);
+      }
+    })
+    .catch(() => {});
+
   connectWebSocket();
   animFrameId = requestAnimationFrame(updateProgressLoop);
 

@@ -461,6 +461,17 @@
     } catch (e) {
       console.warn('Initial fetch failed, relying on WebSocket');
     }
+
+    try {
+      const resStatus = await fetch('/api/status');
+      if (resStatus.ok) {
+        const sdata = await resStatus.json();
+        if (sdata && sdata.track) {
+          updateTrackHeader(sdata.track);
+        }
+      }
+    } catch (e) {}
+
     initWebSocket();
   }
 
