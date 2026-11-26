@@ -1333,11 +1333,20 @@ mock_start_time = time.time()
 # Fallback helpers for window-title tracking (guarantees detection even if WinRT service is unavailable)
 FALLBACK_METADATA_CACHE: Dict[str, dict] = {}
 fallback_position = 0.0
-fallback_last_time = time.time()
+fallback_last_tick = time.time()
 fallback_current_key = ""
+fallback_last_song = {
+    "title": "",
+    "artist": "",
+    "album": "",
+    "duration": 180.0,
+    "artwork": DEFAULT_ARTWORK_SVG
+}
 
 def get_spotify_track_from_window() -> Optional[dict]:
-    """Find currently playing Spotify track from Spotify window title."""
+    """Find currently playing Spotify track from Spotify window titles.
+    Scans all process windows and prioritizes any window with an active song title.
+    """
     try:
         startupinfo = None
         if os.name == 'nt':
@@ -1349,7 +1358,7 @@ def get_spotify_track_from_window() -> Optional[dict]:
             encoding='utf-8',
             errors='ignore',
             startupinfo=startupinfo,
-            timeout=2.0
+            timeout=1.5
         )
         reader = csv.reader(io.StringIO(out))
         rows = list(reader)
@@ -1357,25 +1366,33 @@ def get_spotify_track_from_window() -> Optional[dict]:
             header = [h.strip().lower() for h in rows[0]]
             title_idx = header.index('window title') if 'window title' in header else -1
             if title_idx >= 0:
+                found_song = None
+                found_paused = False
                 for row in rows[1:]:
                     if len(row) > title_idx:
                         wtitle = row[title_idx].strip()
                         if wtitle and wtitle not in ('N/A', 'OleMainThreadWndName', 'Default IME', 'MSCTFIME UI', ''):
                             if ' - ' in wtitle:
-                                artist, title = wtitle.split(' - ', 1)
-                                return {
-                                    'artist': artist.strip(),
-                                    'title': title.strip(),
+                                parts = wtitle.split(' - ', 1)
+                                found_song = {
+                                    'artist': parts[0].strip(),
+                                    'title': parts[1].strip(),
                                     'is_playing': True,
                                     'status': 'PLAYING'
                                 }
+                                break  # Active song found! Take it immediately
                             elif wtitle.lower() in ('spotify', 'spotify free', 'spotify premium'):
-                                return {
-                                    'artist': 'Spotify',
-                                    'title': '',
-                                    'is_playing': False,
-                                    'status': 'PAUSED'
-                                }
+                                found_paused = True
+
+                if found_song:
+                    return found_song
+                elif found_paused:
+                    return {
+                        'artist': '',
+                        'title': '',
+                        'is_playing': False,
+                        'status': 'PAUSED'
+                    }
     except Exception:
         pass
     return None
@@ -1415,21 +1432,30 @@ def fetch_fallback_metadata(artist: str, title: str) -> dict:
 # Background Worker for Media Detection
 async def media_tracker_loop():
     global current_track_state, cached_track_id, cached_artwork, mock_idx, mock_start_time
-    global fallback_position, fallback_last_time, fallback_current_key
+    global fallback_position, fallback_last_tick, fallback_current_key, fallback_last_song
     logger.info("Starting Media Tracker background worker...")
 
     media_manager = None
+    winrt_disabled = False
+    winrt_retry_after = 0.0
+
     if WINSDK_AVAILABLE:
         try:
             media_manager = await MediaManager.request_async()
             logger.info("Windows Media Transport Controls Session Manager initialized.")
         except Exception as e:
-            logger.warning(f"WinRT MediaManager init note: {e} (window tracker active).")
+            logger.info(f"WinRT MediaManager unavailable: {e}. Instant window tracker activated.")
+            winrt_disabled = True
+            winrt_retry_after = time.time() + 60.0
+
+    last_broadcast_pos = 0.0
 
     while True:
         try:
+            now = time.time()
+
+            # Test song mode (from Control Panel)
             if CURRENT_CONFIG.get("testMode", False):
-                now = time.time()
                 mock = MOCK_TRACKS[mock_idx % len(MOCK_TRACKS)]
                 elapsed = int(now - mock_start_time) % mock["duration"]
                 mock_state = {
@@ -1453,14 +1479,17 @@ async def media_tracker_loop():
             found_track = False
             new_state = None
 
-            # 1. Try WinRT MediaManager if available
+            # 1. Try WinRT MediaManager if active and not in disabled-cooldown
             target_session = None
             if WINSDK_AVAILABLE:
-                if not media_manager:
+                if not media_manager and (not winrt_disabled or now > winrt_retry_after):
                     try:
                         media_manager = await MediaManager.request_async()
+                        winrt_disabled = False
                     except Exception:
                         media_manager = None
+                        winrt_disabled = True
+                        winrt_retry_after = now + 60.0
 
                 if media_manager:
                     try:
@@ -1530,54 +1559,78 @@ async def media_tracker_loop():
                             "is_playing": is_playing,
                             "artwork": cached_artwork,
                             "app_id": app_id,
-                            "timestamp": time.time(),
+                            "timestamp": now,
                             "has_track": True
                         }
                 except Exception as e:
                     logger.debug(f"WinRT session read note: {e}")
                     found_track = False
 
-            # 2. If WinRT didn't yield a track, seamlessly use the window title fallback!
+            # 2. Fast window title tracker fallback (works 100% reliably & smoothly)
             if not found_track:
                 w_track = await asyncio.to_thread(get_spotify_track_from_window)
-                if w_track and w_track.get("title"):
-                    found_track = True
-                    title = w_track["title"]
-                    artist = w_track["artist"]
-                    status_str = w_track["status"]
-                    is_playing = w_track["is_playing"]
+                if w_track:
+                    if w_track.get("is_playing"):
+                        # Actively playing a song
+                        found_track = True
+                        title = w_track["title"]
+                        artist = w_track["artist"]
+                        status_str = "PLAYING"
+                        is_playing = True
 
-                    track_key = f"{artist}|{title}"
-                    now = time.time()
-                    if track_key != fallback_current_key:
-                        fallback_current_key = track_key
-                        fallback_position = 0.0
-                        fallback_last_time = now
-                    else:
-                        if is_playing:
-                            fallback_position += (now - fallback_last_time)
-                        fallback_last_time = now
+                        track_key = f"{artist}|{title}"
+                        if track_key != fallback_current_key:
+                            fallback_current_key = track_key
+                            fallback_position = 0.0
+                            fallback_last_tick = now
+                            meta = await asyncio.to_thread(fetch_fallback_metadata, artist, title)
+                            fallback_last_song["title"] = title
+                            fallback_last_song["artist"] = artist
+                            fallback_last_song["album"] = meta.get("album", "")
+                            fallback_last_song["artwork"] = meta.get("artwork", DEFAULT_ARTWORK_SVG)
+                            fallback_last_song["duration"] = meta.get("duration", 180.0)
+                        else:
+                            dt = now - fallback_last_tick
+                            fallback_last_tick = now
+                            fallback_position += dt
 
-                    meta = await asyncio.to_thread(fetch_fallback_metadata, artist, title)
-                    duration = meta.get("duration", 180.0)
-                    album = meta.get("album", "")
-                    artwork = meta.get("artwork", DEFAULT_ARTWORK_SVG)
-                    position = min(fallback_position, duration)
+                        duration = fallback_last_song["duration"]
+                        position = min(fallback_position, duration)
 
-                    new_state = {
-                        "title": title,
-                        "artist": artist,
-                        "album": album,
-                        "duration": duration,
-                        "position": position,
-                        "status": status_str,
-                        "is_playing": is_playing,
-                        "artwork": artwork,
-                        "app_id": "Spotify.exe",
-                        "timestamp": now,
-                        "has_track": True
-                    }
+                        new_state = {
+                            "title": title,
+                            "artist": artist,
+                            "album": fallback_last_song["album"],
+                            "duration": duration,
+                            "position": position,
+                            "status": status_str,
+                            "is_playing": is_playing,
+                            "artwork": fallback_last_song["artwork"],
+                            "app_id": "Spotify.exe",
+                            "timestamp": now,
+                            "has_track": True
+                        }
+                    elif w_track.get("status") == "PAUSED":
+                        # Spotify is running but playback is paused
+                        if fallback_last_song["title"]:
+                            # Keep current song on screen in PAUSED state (smooth & no flickering!)
+                            found_track = True
+                            fallback_last_tick = now
+                            new_state = {
+                                "title": fallback_last_song["title"],
+                                "artist": fallback_last_song["artist"],
+                                "album": fallback_last_song["album"],
+                                "duration": fallback_last_song["duration"],
+                                "position": min(fallback_position, fallback_last_song["duration"]),
+                                "status": "PAUSED",
+                                "is_playing": False,
+                                "artwork": fallback_last_song["artwork"],
+                                "app_id": "Spotify.exe",
+                                "timestamp": now,
+                                "has_track": True
+                            }
 
+            # 3. Spotify closed / no track at all
             if not found_track:
                 if current_track_state["has_track"]:
                     current_track_state = {
@@ -1590,33 +1643,40 @@ async def media_tracker_loop():
                         "is_playing": False,
                         "artwork": DEFAULT_ARTWORK_SVG,
                         "app_id": "",
-                        "timestamp": time.time(),
+                        "timestamp": now,
                         "has_track": False
                     }
                     cached_track_id = ""
                     fallback_current_key = ""
                     await manager.broadcast_json({"type": "track_update", "data": current_track_state})
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.5)
                 continue
 
-            diff = (
+            # Determine if we should broadcast to client:
+            # - Track changed
+            # - Play/Pause state changed
+            # - Track became active/inactive
+            # - Periodic position sync (every ~2s) for 60fps client interpolation
+            state_changed = (
                 new_state["title"] != current_track_state["title"]
                 or new_state["artist"] != current_track_state["artist"]
                 or new_state["status"] != current_track_state["status"]
-                or abs(new_state["position"] - current_track_state["position"]) > 1.8
-                or abs(new_state["duration"] - current_track_state["duration"]) > 0.5
                 or new_state["has_track"] != current_track_state["has_track"]
+                or abs(new_state["duration"] - current_track_state["duration"]) > 0.5
             )
+            time_to_sync_pos = abs(new_state["position"] - last_broadcast_pos) >= 2.0
 
             current_track_state = new_state
-            if diff:
+            if state_changed or time_to_sync_pos:
+                last_broadcast_pos = new_state["position"]
                 await manager.broadcast_json({"type": "track_update", "data": current_track_state})
 
-            await asyncio.sleep(0.7)
+            # Fast 0.35s polling loop
+            await asyncio.sleep(0.35)
 
         except Exception as e:
             logger.error(f"Error in media tracker loop: {e}")
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(1.0)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
