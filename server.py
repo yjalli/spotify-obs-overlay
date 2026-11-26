@@ -1,3 +1,8 @@
+import csv
+import io
+import subprocess
+import urllib.parse
+import urllib.request
 import asyncio
 import base64
 from contextlib import asynccontextmanager
@@ -1325,9 +1330,92 @@ MOCK_TRACKS = [
 mock_idx = 0
 mock_start_time = time.time()
 
+# Fallback helpers for window-title tracking (guarantees detection even if WinRT service is unavailable)
+FALLBACK_METADATA_CACHE: Dict[str, dict] = {}
+fallback_position = 0.0
+fallback_last_time = time.time()
+fallback_current_key = ""
+
+def get_spotify_track_from_window() -> Optional[dict]:
+    """Find currently playing Spotify track from Spotify window title."""
+    try:
+        startupinfo = None
+        if os.name == 'nt':
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = 0  # SW_HIDE
+        out = subprocess.check_output(
+            ['tasklist', '/v', '/fi', 'imagename eq spotify.exe', '/fo', 'csv'],
+            encoding='utf-8',
+            errors='ignore',
+            startupinfo=startupinfo,
+            timeout=2.0
+        )
+        reader = csv.reader(io.StringIO(out))
+        rows = list(reader)
+        if len(rows) > 1:
+            header = [h.strip().lower() for h in rows[0]]
+            title_idx = header.index('window title') if 'window title' in header else -1
+            if title_idx >= 0:
+                for row in rows[1:]:
+                    if len(row) > title_idx:
+                        wtitle = row[title_idx].strip()
+                        if wtitle and wtitle not in ('N/A', 'OleMainThreadWndName', 'Default IME', 'MSCTFIME UI', ''):
+                            if ' - ' in wtitle:
+                                artist, title = wtitle.split(' - ', 1)
+                                return {
+                                    'artist': artist.strip(),
+                                    'title': title.strip(),
+                                    'is_playing': True,
+                                    'status': 'PLAYING'
+                                }
+                            elif wtitle.lower() in ('spotify', 'spotify free', 'spotify premium'):
+                                return {
+                                    'artist': 'Spotify',
+                                    'title': '',
+                                    'is_playing': False,
+                                    'status': 'PAUSED'
+                                }
+    except Exception:
+        pass
+    return None
+
+def fetch_fallback_metadata(artist: str, title: str) -> dict:
+    """Fetch high-res album art and duration without any API key from public search."""
+    key = f"{artist.lower()}|{title.lower()}"
+    if key in FALLBACK_METADATA_CACHE:
+        return FALLBACK_METADATA_CACHE[key]
+    try:
+        clean_title = title.split('(')[0].split('-')[0].strip()
+        query = f"{artist} {clean_title}"
+        url = f"https://itunes.apple.com/search?term={urllib.parse.quote(query)}&media=music&entity=song&limit=1"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+        with urllib.request.urlopen(req, timeout=2.5) as resp:
+            data = json.loads(resp.read().decode('utf-8'))
+            if data.get("resultCount", 0) > 0:
+                res = data["results"][0]
+                art = res.get("artworkUrl100", "").replace("100x100bb", "600x600bb")
+                meta = {
+                    "artwork": art or DEFAULT_ARTWORK_SVG,
+                    "album": res.get("collectionName", ""),
+                    "duration": round(res.get("trackTimeMillis", 0) / 1000.0, 2) or 180.0
+                }
+                FALLBACK_METADATA_CACHE[key] = meta
+                return meta
+    except Exception:
+        pass
+    default_meta = {
+        "artwork": DEFAULT_ARTWORK_SVG,
+        "album": "",
+        "duration": 180.0
+    }
+    FALLBACK_METADATA_CACHE[key] = default_meta
+    return default_meta
+
 # Background Worker for Media Detection
 async def media_tracker_loop():
     global current_track_state, cached_track_id, cached_artwork, mock_idx, mock_start_time
+    global fallback_position, fallback_last_time, fallback_current_key
     logger.info("Starting Media Tracker background worker...")
 
     media_manager = None
@@ -1336,7 +1424,7 @@ async def media_tracker_loop():
             media_manager = await MediaManager.request_async()
             logger.info("Windows Media Transport Controls Session Manager initialized.")
         except Exception as e:
-            logger.error(f"Failed to initialize MediaManager: {e}")
+            logger.warning(f"WinRT MediaManager init note: {e} (window tracker active).")
 
     while True:
         try:
@@ -1362,42 +1450,135 @@ async def media_tracker_loop():
                 await asyncio.sleep(1)
                 continue
 
-            if not WINSDK_AVAILABLE:
-                await asyncio.sleep(2)
-                continue
+            found_track = False
+            new_state = None
 
-            if not media_manager:
-                try:
-                    media_manager = await MediaManager.request_async()
-                except Exception:
-                    await asyncio.sleep(2)
-                    continue
-
+            # 1. Try WinRT MediaManager if available
             target_session = None
-            try:
-                sessions = media_manager.get_sessions()
-            except Exception:
-                sessions = []
+            if WINSDK_AVAILABLE:
+                if not media_manager:
+                    try:
+                        media_manager = await MediaManager.request_async()
+                    except Exception:
+                        media_manager = None
 
-            for s in sessions:
+                if media_manager:
+                    try:
+                        sessions = media_manager.get_sessions()
+                        for s in sessions:
+                            try:
+                                if "spotify" in s.source_app_user_model_id.lower():
+                                    target_session = s
+                                    break
+                            except Exception:
+                                pass
+                        if not target_session:
+                            target_session = media_manager.get_current_session()
+                        if not target_session and len(sessions) > 0:
+                            target_session = sessions[0]
+                    except Exception:
+                        target_session = None
+
+            if target_session:
                 try:
-                    app_id = s.source_app_user_model_id.lower()
-                    if "spotify" in app_id:
-                        target_session = s
-                        break
-                except Exception:
-                    pass
+                    app_id = target_session.source_app_user_model_id
+                    playback_info = target_session.get_playback_info()
+                    status_str = playback_info.playback_status.name if playback_info else "Unknown"
+                    is_playing = (status_str == "PLAYING")
 
-            if not target_session:
-                try:
-                    target_session = media_manager.get_current_session()
-                except Exception:
-                    target_session = None
+                    media_props = await target_session.try_get_media_properties_async()
+                    title = (media_props.title if media_props and media_props.title else "").strip()
+                    artist = (media_props.artist if media_props and media_props.artist else "").strip()
+                    album = (media_props.album_title if media_props and media_props.album_title else "").strip()
 
-            if not target_session and len(sessions) > 0:
-                target_session = sessions[0]
+                    timeline = target_session.get_timeline_properties()
+                    position = 0.0
+                    duration = 0.0
+                    if timeline:
+                        if timeline.position:
+                            position = timeline.position.total_seconds()
+                        if timeline.end_time:
+                            duration = timeline.end_time.total_seconds()
 
-            if not target_session:
+                    if title or artist:
+                        found_track = True
+                        track_id = f"{app_id}|{title}|{artist}|{album}"
+                        if track_id != cached_track_id:
+                            cached_track_id = track_id
+                            cached_artwork = DEFAULT_ARTWORK_SVG
+                            if media_props and media_props.thumbnail:
+                                try:
+                                    stream = await media_props.thumbnail.open_read_async()
+                                    size = stream.size
+                                    if size > 0:
+                                        reader = DataReader(stream)
+                                        await reader.load_async(size)
+                                        buf = bytearray(size)
+                                        reader.read_bytes(buf)
+                                        b64 = base64.b64encode(buf).decode("ascii")
+                                        cached_artwork = f"data:image/jpeg;base64,{b64}"
+                                except Exception as err:
+                                    logger.warning(f"Could not load thumbnail stream: {err}")
+
+                        new_state = {
+                            "title": title,
+                            "artist": artist,
+                            "album": album,
+                            "duration": duration,
+                            "position": position,
+                            "status": status_str,
+                            "is_playing": is_playing,
+                            "artwork": cached_artwork,
+                            "app_id": app_id,
+                            "timestamp": time.time(),
+                            "has_track": True
+                        }
+                except Exception as e:
+                    logger.debug(f"WinRT session read note: {e}")
+                    found_track = False
+
+            # 2. If WinRT didn't yield a track, seamlessly use the window title fallback!
+            if not found_track:
+                w_track = await asyncio.to_thread(get_spotify_track_from_window)
+                if w_track and w_track.get("title"):
+                    found_track = True
+                    title = w_track["title"]
+                    artist = w_track["artist"]
+                    status_str = w_track["status"]
+                    is_playing = w_track["is_playing"]
+
+                    track_key = f"{artist}|{title}"
+                    now = time.time()
+                    if track_key != fallback_current_key:
+                        fallback_current_key = track_key
+                        fallback_position = 0.0
+                        fallback_last_time = now
+                    else:
+                        if is_playing:
+                            fallback_position += (now - fallback_last_time)
+                        fallback_last_time = now
+
+                    meta = await asyncio.to_thread(fetch_fallback_metadata, artist, title)
+                    duration = meta.get("duration", 180.0)
+                    album = meta.get("album", "")
+                    artwork = meta.get("artwork", DEFAULT_ARTWORK_SVG)
+                    position = min(fallback_position, duration)
+
+                    new_state = {
+                        "title": title,
+                        "artist": artist,
+                        "album": album,
+                        "duration": duration,
+                        "position": position,
+                        "status": status_str,
+                        "is_playing": is_playing,
+                        "artwork": artwork,
+                        "app_id": "Spotify.exe",
+                        "timestamp": now,
+                        "has_track": True
+                    }
+
+            if not found_track:
                 if current_track_state["has_track"]:
                     current_track_state = {
                         "title": "Waiting for Spotify...",
@@ -1413,80 +1594,10 @@ async def media_tracker_loop():
                         "has_track": False
                     }
                     cached_track_id = ""
+                    fallback_current_key = ""
                     await manager.broadcast_json({"type": "track_update", "data": current_track_state})
                 await asyncio.sleep(1)
                 continue
-
-            app_id = target_session.source_app_user_model_id
-            playback_info = target_session.get_playback_info()
-            status_str = playback_info.playback_status.name if playback_info else "Unknown"
-            is_playing = (status_str == "PLAYING")
-
-            media_props = await target_session.try_get_media_properties_async()
-            title = (media_props.title if media_props and media_props.title else "").strip()
-            artist = (media_props.artist if media_props and media_props.artist else "").strip()
-            album = (media_props.album_title if media_props and media_props.album_title else "").strip()
-
-            timeline = target_session.get_timeline_properties()
-            position = 0.0
-            duration = 0.0
-            if timeline:
-                if timeline.position:
-                    position = timeline.position.total_seconds()
-                if timeline.end_time:
-                    duration = timeline.end_time.total_seconds()
-
-            if not title and not artist:
-                if current_track_state["has_track"]:
-                    current_track_state = {
-                        "title": "Spotify Idle",
-                        "artist": "Play a track in Spotify",
-                        "album": "",
-                        "duration": 0,
-                        "position": 0,
-                        "status": status_str,
-                        "is_playing": is_playing,
-                        "artwork": DEFAULT_ARTWORK_SVG,
-                        "app_id": app_id,
-                        "timestamp": time.time(),
-                        "has_track": False
-                    }
-                    await manager.broadcast_json({"type": "track_update", "data": current_track_state})
-                await asyncio.sleep(1)
-                continue
-
-            track_id = f"{app_id}|{title}|{artist}|{album}"
-
-            if track_id != cached_track_id:
-                cached_track_id = track_id
-                cached_artwork = DEFAULT_ARTWORK_SVG
-                if media_props and media_props.thumbnail:
-                    try:
-                        stream = await media_props.thumbnail.open_read_async()
-                        size = stream.size
-                        if size > 0:
-                            reader = DataReader(stream)
-                            await reader.load_async(size)
-                            buf = bytearray(size)
-                            reader.read_bytes(buf)
-                            b64 = base64.b64encode(buf).decode("ascii")
-                            cached_artwork = f"data:image/jpeg;base64,{b64}"
-                    except Exception as err:
-                        logger.warning(f"Could not load thumbnail stream: {err}")
-
-            new_state = {
-                "title": title,
-                "artist": artist,
-                "album": album,
-                "duration": duration,
-                "position": position,
-                "status": status_str,
-                "is_playing": is_playing,
-                "artwork": cached_artwork,
-                "app_id": app_id,
-                "timestamp": time.time(),
-                "has_track": True
-            }
 
             diff = (
                 new_state["title"] != current_track_state["title"]

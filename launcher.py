@@ -55,9 +55,18 @@ def open_browser_fallback():
 
 
 def main():
-    # ── 1. Start server in background thread ──────────────────────────────────
-    srv_thread = threading.Thread(target=run_server, daemon=True, name="OBSServer")
-    srv_thread.start()
+    # ── 1. Start server in background thread (if not already running) ───────────
+    server_already_running = False
+    try:
+        urllib.request.urlopen(f"http://localhost:{PORT}/api/status", timeout=1)
+        server_already_running = True
+        print("[*] Server is already running on port 8888.")
+    except Exception:
+        pass
+
+    if not server_already_running:
+        srv_thread = threading.Thread(target=run_server, daemon=True, name="OBSServer")
+        srv_thread.start()
 
     print("[*] Starting Spotify OBS Overlay Server...")
     if not wait_for_server(timeout=20):
